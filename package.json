@@ -1,0 +1,42 @@
+{
+  "name": "dsh-skill-literature-reading",
+  "version": "0.1.0",
+  "description": "General-purpose literature reading skill for DeepSeek Harness. Classifies papers into core / related / method, adapts explanation depth to the reader's stage, and maintains a learner profile plus paper cards.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-skill",
+    "literature",
+    "paper-reading",
+    "research",
+    "skills"
+  ],
+  "files": [
+    "skills/**",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.2.0-rc.2"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": ">=0.2.0-rc.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2842895276/dsh-skill-literature-reading.git"
+  },
+  "bugs": {
+    "url": "https://github.com/2842895276/dsh-skill-literature-reading/issues"
+  },
+  "homepage": "https://github.com/2842895276/dsh-skill-literature-reading#readme"
+}

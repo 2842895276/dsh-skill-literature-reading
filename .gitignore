@@ -1,0 +1,30 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 日志
+*.log
+npm-debug.log*
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# 打包产物
+*.tgz
+dist/
+
+# ─────────────────────────────────────────────
+# 用户实际数据（只在仓库根目录忽略，不影响 example/）
+# 前面加 / 表示只匹配根目录，这样 example/papers 不会被误伤
+# ─────────────────────────────────────────────
+/.literature/
+/papers/
+/cards/
+/links.md

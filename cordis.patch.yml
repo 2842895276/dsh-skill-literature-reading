@@ -1,0 +1,19 @@
+# Bundle patch for dsh-skill-literature-reading.
+#
+# Registers the packaged Skill root through the official filesystem Skill
+# provider. The root is resolved from the installed npm identity anchored at
+# the DSH profile (Loader baseUrl) — never as a path concatenated onto baseUrl.
+#
+# Install:
+#   dsh plugin --profile web add dsh-skill-literature-reading
+#   dsh plugin --profile desktop add dsh-skill-literature-reading
+#
+# Local development:
+#   dsh plugin --profile web add link:./path/to/dsh-skill-literature-reading
+- insert:
+    - id: literature-reading-skill-filesystem
+      name: '@deepseek-ai/dsh-skill-filesystem'
+      config:
+        providerName: literature-reading
+        includeDefaultRoots: false
+        bundledSkillDir: !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('dsh-skill-literature-reading/package.json')), 'skills')
