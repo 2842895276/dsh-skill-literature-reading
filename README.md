@@ -479,6 +479,9 @@ dsh-skill-literature-reading/
 | [docs/manual.md](docs/manual.md) | Full manual with troubleshooting (Chinese) |
 | [docs/design.md](docs/design.md) | Architecture diagrams |
 | [docs/files.md](docs/files.md) | What each file does |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+
+**Current version**: 0.2.0 ｜ [Changelog](CHANGELOG.md)
 
 ---
 

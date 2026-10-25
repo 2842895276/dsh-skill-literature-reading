@@ -691,6 +691,9 @@ b，标准版，从头
 | [docs/manual.md](docs/manual.md) | 完整教程（卡片怎么填、档案怎么长） |
 | [docs/design.md](docs/design.md) | 架构图和设计原理 |
 | [docs/files.md](docs/files.md) | 每个文件干什么的 |
+| [CHANGELOG.md](CHANGELOG.md) | 版本更新记录 |
+
+**当前版本**：0.2.0 ｜ [更新日志](CHANGELOG.md)
 
 ---
 

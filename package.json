@@ -1,6 +1,6 @@
 {
   "name": "dsh-skill-literature-reading",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "General-purpose literature reading skill for DeepSeek Harness. Classifies papers into core / related / method, adapts explanation depth to the reader's stage, and maintains a learner profile plus paper cards.",
   "type": "module",
   "license": "MIT",
