@@ -272,6 +272,70 @@ dsh-skill-literature-reading/
 
 ## Usage
 
+### Two ways to start
+
+**Both work, but they behave differently.**
+
+#### Option 1: self-check first (recommended)
+
+```
+You: 文献阅读
+   ↓
+It:  📋 status card (config / stage / four paths)
+   ↓
+You: read this paper + PDF
+```
+
+**Why**: it confirms the environment. A missing config, a wrong path, or a stale skill version shows up **immediately** instead of halfway through a paper.
+
+```
+📋 文献阅读 · 状态
+
+Config    ✅ .literature/config.md
+Stage     0 beginner | 3 papers read | context: last 3
+
+PDFs      ✅ papers/
+Cards     ✅ cards/
+Index     ✅ cards/00-index.md
+Links     ✅ links.md
+
+Next: say "read this paper" and attach the PDF
+```
+
+#### Option 2: just send the paper
+
+```
+You: read this paper + PDF
+```
+
+**It handles this too**, in this order:
+
+```
+① Archive first (the PDF is saved, you are told where)
+② No config found → asks three rounds of questions
+③ Config created → asks "read this paper now?"
+```
+
+**Why archive first**: if you close the conversation, the paper is not lost.
+
+**But it costs two extra steps** — the paper you sent sits idle until you finish answering.
+
+### First-time advice
+
+**On your first run, use Option 1:**
+
+```
+1. Say 文献阅读
+2. See "config missing" in the status card
+3. Answer the three rounds
+4. See "✓ config created"
+5. Then send the paper
+```
+
+After that, either option is fine.
+
+> **Design goal**: any opening works. The fixed phrase is an optimisation, not a requirement.
+
 ### First run: create a config
 
 If `.literature/config.md` is missing, the skill asks three questions and generates one.
@@ -315,6 +379,61 @@ You: make a card
      ↓
 AI: writes card → updates index → updates config
 ```
+
+---
+
+## Permissions
+
+### What it needs
+
+**Only read/write access to your own project folder.**
+
+| Operation | Scope | Extra approval |
+|---|---|---|
+| Read config / index / cards / PDFs | Inside your project | ❌ |
+| Create cards, update index | Inside your project | ❌ |
+| Copy a PDF into `papers/` | Source: wherever you point<br>Target: inside project | ❌ (usually) |
+| Create directories | Inside project | ❌ |
+
+A global install (`~/.agents/skills/`) needs one write during the installer. Nothing after that.
+
+### What it will never do
+
+| ❌ Never | Why it matters |
+|---|---|
+| Modify your original PDF | Your source files are never renamed, moved or deleted |
+| Touch files outside the project | It does not scan your other folders |
+| Install software / change system settings | Text operations only |
+| Change file permissions | No `chmod` / `icacls` style operations |
+| Delete your files | Including ones that "look useless" |
+
+### When permission is denied
+
+```
+⚠️ Write failed: F:\my-papers\PDF (access denied)
+
+Possible causes:
+  1. The directory is locked by another program
+  2. Your user lacks write permission
+  3. The path does not exist and cannot be created
+
+Fall back to the default path ./papers/?
+```
+
+**It stops and tells you instead of working around it.**
+
+> ⚠️ **An "access denied" from the tool is a policy refusal, not a bug.**
+> Change the path or grant access manually. **Do not try to fix permissions** — that usually makes it worse.
+
+### A real case
+
+Someone kept the project at `F:\文献阅读` while DSH's workspace was elsewhere, so the sandbox refused writes. The agent attempted two permission repairs. It worked in the end, but:
+
+- it cost extra time
+- it left a test file that could not be deleted
+- the user had no idea what had been changed
+
+**The better setup**: make the project folder the DSH workspace. Permissions then line up by construction.
 
 ---
 
