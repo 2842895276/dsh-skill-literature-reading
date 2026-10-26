@@ -190,7 +190,7 @@ if ($ok -and $missing.Count -eq 0) {
     Write-Host "  OK 安装成功" -ForegroundColor Green
     Write-Host ""
     Write-Host "     位置：$dest" -ForegroundColor Gray
-    Write-Host "     文件：SKILL.md + 5 个参考文件" -ForegroundColor Gray
+    Write-Host "     文件：SKILL.md + 完整 references 目录" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  接下来：" -ForegroundColor Cyan
     if ($needRestart) {
@@ -203,7 +203,7 @@ if ($ok -and $missing.Count -eq 0) {
         Write-Host "     （装到项目里不用重启）" -ForegroundColor DarkGray
     }
     Write-Host ""
-    Write-Host "  验证：如果技能生效，它会先问你几个问题，而不是直接分析。" -ForegroundColor DarkGray
+    Write-Host "  验证：提供论文后应先给导览；无论文时提示提供材料。" -ForegroundColor DarkGray
 } else {
     Write-Host "  X 安装不完整" -ForegroundColor Red
     if (-not $ok) { Write-Host "    缺少 SKILL.md" -ForegroundColor Gray }
