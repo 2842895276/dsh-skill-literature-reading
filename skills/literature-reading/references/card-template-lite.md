@@ -82,3 +82,9 @@ PDF:
 
 > ⚠️ 但 **`英文标题` 和 `链接` 不能省**——那是下次查重的唯一依据。
 > 没 DOI 就填 arXiv 号或论文页面 URL；实在都没有，填「无」并在下方备注原因。
+
+## 可选思考记录
+
+REL/METH 同样可保存我的理解、待核实问题和研究线索；只添加有内容的项，标明用户提出或 AI 建议，不因类别省略用户思考。与已有段落重复时合并，细则见 [thinking-interaction.md](thinking-interaction.md)。
+
+研究线索的检索字段与恢复规则见 [research-tracks.md](research-tracks.md)，与 CORE 同样支持超出历史 N 后按名称找回。

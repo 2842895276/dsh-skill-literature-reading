@@ -1,214 +1,112 @@
-﻿# 一键安装（Windows）
-#
-# 双击 install.cmd 即可。
-# 会问你要装到哪，然后复制过去。
+﻿# Windows PowerShell 5.1 / PowerShell 7
+[CmdletBinding()]
+param(
+    [ValidateSet('Codex','DSH')][string]$Platform,
+    [ValidateSet('Project','User')][string]$Scope,
+    [string]$ProjectPath,
+    [switch]$NoPause
+)
+$ErrorActionPreference = 'Stop'
 
-$ErrorActionPreference = "Stop"
-chcp 65001 > $null
-
-$repo = Split-Path -Parent $PSScriptRoot
-$src  = Join-Path $repo "skills\literature-reading"
-
-function Write-Header {
-    Write-Host ""
-    Write-Host "  DSH 文献阅读技能 · 安装" -ForegroundColor Cyan
-    Write-Host "  ─────────────────────────────" -ForegroundColor DarkGray
-    Write-Host ""
-}
-
-function Fail($msg) {
-    Write-Host ""
-    Write-Host "  X $msg" -ForegroundColor Red
-    Write-Host ""
-    Read-Host "  按回车退出"
-    exit 1
-}
-
-# 检查源
-if (-not (Test-Path (Join-Path $src "SKILL.md"))) {
-    Write-Header
-    Fail "找不到技能文件：$src\SKILL.md  请确认本文件在仓库的 install 目录下。"
-}
-
-# 选择安装位置
-Write-Header
-Write-Host "  装到哪里？" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "    1  全局（推荐）" -ForegroundColor White
-Write-Host "       $env:USERPROFILE\.agents\skills\" -ForegroundColor DarkGray
-Write-Host "       -> 所有项目都能用，装完需重启 DSH" -ForegroundColor DarkGray
-Write-Host ""
-Write-Host "    2  指定项目" -ForegroundColor White
-Write-Host "       <你的项目>\.dsh\skills\" -ForegroundColor DarkGray
-Write-Host "       -> 只有那个项目能用，不用重启" -ForegroundColor DarkGray
-Write-Host ""
-Write-Host "    3  自定义目录" -ForegroundColor White
-Write-Host "       任意位置，需你自己在 DSH 里注册" -ForegroundColor DarkGray
-Write-Host ""
-Write-Host "    4  其他桌面端（Cursor / Claude 等）" -ForegroundColor White
-Write-Host "       输出各平台的安装说明" -ForegroundColor DarkGray
-Write-Host ""
-
-$choice = Read-Host "  选 [1-4，直接回车 = 1]"
-if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
-
-$dest = $null
-$needRestart = $false
-
-switch ($choice) {
-    "1" {
-        $dest = Join-Path $env:USERPROFILE ".agents\skills\literature-reading"
-        $needRestart = $true
-    }
-    "2" {
-        Write-Host ""
-        Write-Host "  输入你的项目路径（例：F:\我的文献项目）" -ForegroundColor Gray
-        $proj = Read-Host "  项目路径"
-        if ([string]::IsNullOrWhiteSpace($proj)) { Fail "没输入项目路径" }
-        if (-not (Test-Path $proj)) {
-            Write-Host "  该路径不存在，要新建吗？[Y/n]" -ForegroundColor Yellow
-            $yn = Read-Host
-            if ($yn -eq "n" -or $yn -eq "N") { Fail "已取消" }
-            New-Item -ItemType Directory -Path $proj -Force | Out-Null
-        }
-        $dest = Join-Path $proj ".dsh\skills\literature-reading"
-    }
-    "3" {
-        Write-Host ""
-        Write-Host "  输入完整目标路径（会在这里建 literature-reading 文件夹）" -ForegroundColor Gray
-        Write-Host "  例：F:\my-skills" -ForegroundColor DarkGray
-        $custom = Read-Host "  目标目录"
-        if ([string]::IsNullOrWhiteSpace($custom)) { Fail "没输入路径" }
-        $dest = Join-Path $custom "literature-reading"
-        Write-Host ""
-        Write-Host "  ! 自定义目录需要在 DSH 里注册后才能被识别：" -ForegroundColor Yellow
-        Write-Host "    在 DSH 的技能中心 -> 设置 -> 添加自定义技能目录" -ForegroundColor Gray
-        Write-Host "    或改 profile 的 cordis.patch.yml，加 customSkillDirs" -ForegroundColor Gray
-    }
-    "4" {
-        Write-Header
-        Write-Host "  其他桌面端的安装方式" -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host "  [Cursor]" -ForegroundColor Yellow
-        Write-Host "    把 SKILL.md 内容复制到 项目\.cursor\rules\ 下的 .mdc 文件" -ForegroundColor Gray
-        Write-Host "    或直接放到 项目根目录 的 .cursorrules" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "  [Cline / Roo Code]" -ForegroundColor Yellow
-        Write-Host "    放到 项目根目录 的 .clinerules" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "  [Claude Projects]" -ForegroundColor Yellow
-        Write-Host "    新建 Project -> 把 SKILL.md 内容粘贴到 Project instructions" -ForegroundColor Gray
-        Write-Host "    references 里的模板作为 Project knowledge 上传" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "  [ChatGPT 自定义 GPT]" -ForegroundColor Yellow
-        Write-Host "    Create a GPT -> Instructions 里粘贴 SKILL.md" -ForegroundColor Gray
-        Write-Host "    Knowledge 里上传 references 的文件" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "  [网页版 ChatGPT / 豆包 / Kimi]" -ForegroundColor Yellow
-        Write-Host "    每次对话开头手动粘贴 SKILL.md，再附上论文" -ForegroundColor Gray
-        Write-Host "    （最麻烦，但能用）" -ForegroundColor Gray
-        Write-Host ""
-        Write-Host "  -----------------------------" -ForegroundColor DarkGray
-        Write-Host ""
-        Write-Host "  要现在把技能文件复制到某个位置吗？" -ForegroundColor Yellow
-        Write-Host "    1 = 复制到 Cursor 的 .cursor\rules\" -ForegroundColor Gray
-        Write-Host "    2 = 只打开技能文件夹，我自己复制" -ForegroundColor Gray
-        Write-Host "    3 = 退出" -ForegroundColor Gray
-        $sub = Read-Host "  选 [1-3]"
-        switch ($sub) {
-            "1" {
-                $proj = Read-Host "  输入项目路径"
-                if ([string]::IsNullOrWhiteSpace($proj)) { Fail "没输入" }
-                $rulesDir = Join-Path $proj ".cursor\rules"
-                New-Item -ItemType Directory -Path $rulesDir -Force | Out-Null
-                Copy-Item (Join-Path $src "SKILL.md") (Join-Path $rulesDir "literature-reading.mdc") -Force
-                $refDir = Join-Path $rulesDir "literature-reading-references"
-                New-Item -ItemType Directory -Path $refDir -Force | Out-Null
-                Copy-Item (Join-Path $src "references\*") $refDir -Force
-                Write-Host ""
-                Write-Host "  OK 已复制到 $rulesDir" -ForegroundColor Green
-                Write-Host "     注意：Cursor 的 .mdc 需要手动加 frontmatter（description / globs）" -ForegroundColor Yellow
-                Write-Host ""
-                Read-Host "  按回车退出"
-                exit 0
+function Assert-PlainTree([string]$Path) {
+    if (Test-Path -LiteralPath $Path) {
+        $item = Get-Item -LiteralPath $Path -Force
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "不支持链接目录：$Path" }
+        if ($item.PSIsContainer) {
+            foreach ($child in Get-ChildItem -LiteralPath $Path -Force) {
+                Assert-PlainTree $child.FullName
             }
-            "2" {
-                Start-Process explorer.exe $src
-                Write-Host ""
-                Write-Host "  已打开：$src" -ForegroundColor Green
-                Write-Host "  自己复制到对应位置即可。" -ForegroundColor Gray
-                Write-Host ""
-                Read-Host "  按回车退出"
-                exit 0
-            }
-            default { exit 0 }
         }
     }
-    default { Fail "无效选项：$choice" }
 }
 
-# 目标已存在则备份
-if (Test-Path $dest) {
-    $stamp  = Get-Date -Format "yyyyMMdd-HHmmss"
-    $backup = "$dest.backup-$stamp"
-    Move-Item $dest $backup
-    Write-Host ""
-    Write-Host "  旧版本已备份到：$backup" -ForegroundColor Yellow
-}
-
-# 复制
 try {
-    New-Item -ItemType Directory -Path (Split-Path $dest) -Force | Out-Null
-    Copy-Item $src $dest -Recurse -Force -ErrorAction Stop
-} catch {
-    Write-Host ""
-    Write-Host "  X 复制失败：$($_.Exception.Message)" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "  可能的原因：" -ForegroundColor Yellow
-    Write-Host "    1. 目标目录被占用 -> 先关闭 DSH 再试" -ForegroundColor Gray
-    Write-Host "    2. 权限不足 -> 右键本文件「以管理员身份运行」" -ForegroundColor Gray
-    Write-Host "    3. 杀毒软件拦截 -> 临时关闭后再试" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "  手动安装：" -ForegroundColor Cyan
-    Write-Host "    复制 $src" -ForegroundColor Gray
-    Write-Host "    到   $dest" -ForegroundColor Gray
-    Write-Host ""
-    Read-Host "  按回车退出"
-    exit 1
-}
-
-# 验证
-$ok = Test-Path (Join-Path $dest "SKILL.md")
-$refs = @("onboarding.md","config-template.md","card-template.md","card-template-lite.md","glossary.md")
-$missing = @()
-foreach ($r in $refs) {
-    if (-not (Test-Path (Join-Path $dest "references\$r"))) { $missing += $r }
-}
-
-Write-Host ""
-if ($ok -and $missing.Count -eq 0) {
-    Write-Host "  OK 安装成功" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "     位置：$dest" -ForegroundColor Gray
-    Write-Host "     文件：SKILL.md + 完整 references 目录" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "  接下来：" -ForegroundColor Cyan
-    if ($needRestart) {
-        Write-Host "     1. 完全退出 DeepSeek Harness（托盘图标右键 -> 退出）" -ForegroundColor Gray
-        Write-Host "     2. 重新打开" -ForegroundColor Gray
-        Write-Host "     3. 新建对话，输入「读这篇论文」" -ForegroundColor Gray
-    } else {
-        Write-Host "     1. 在项目文件夹里打开 DSH 对话" -ForegroundColor Gray
-        Write-Host "     2. 输入「读这篇论文」" -ForegroundColor Gray
-        Write-Host "     （装到项目里不用重启）" -ForegroundColor DarkGray
+    $source = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $PSScriptRoot) 'skills\literature-reading'))
+    Assert-PlainTree $source
+    if (-not (Test-Path -LiteralPath (Join-Path $source 'SKILL.md') -PathType Leaf)) { throw '安装包缺少 SKILL.md，请下载完整仓库。' }
+    # Check every Markdown reference before touching the installed copy.
+    foreach ($file in Get-ChildItem -LiteralPath $source -Filter '*.md' -Recurse) {
+        $body = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+        foreach ($match in [regex]::Matches($body, '\]\(([^)]+)\)')) {
+            $link = $match.Groups[1].Value
+            if ($link -match '^[a-zA-Z]+://' -or $link.StartsWith('#')) { continue }
+            $target = Join-Path $file.DirectoryName ($link.Split('#')[0])
+            if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { throw "安装包引用缺失：$($file.Name) -> $link" }
+        }
     }
-    Write-Host ""
-    Write-Host "  验证：提供论文后应先给导览；无论文时提示提供材料。" -ForegroundColor DarkGray
-} else {
-    Write-Host "  X 安装不完整" -ForegroundColor Red
-    if (-not $ok) { Write-Host "    缺少 SKILL.md" -ForegroundColor Gray }
-    if ($missing.Count -gt 0) { Write-Host "    缺少参考文件：$($missing -join ', ')" -ForegroundColor Gray }
+    Write-Host '文献阅读技能 · Codex / DSH 安装' -ForegroundColor Cyan
+    if (-not $Platform) {
+        $answer = Read-Host '使用哪个平台？1 Codex（默认），2 DSH'
+        switch ($answer) { '' { $Platform='Codex' } '1' { $Platform='Codex' } '2' { $Platform='DSH' } default { throw '无效平台选项。' } }
+    }
+    if (-not $Scope) {
+        $answer = Read-Host '安装方式？1 指定项目路径（默认，可选任意已有文件夹），2 用户全局'
+        switch ($answer) { '' { $Scope='Project' } '1' { $Scope='Project' } '2' { $Scope='User' } default { throw '无效范围选项。' } }
+    }
+    if ($Scope -eq 'Project') {
+        if (-not $ProjectPath) {
+            Write-Host '可输入任意已有项目文件夹，例如 D:\论文库 或 F:\文献阅读，不限当前目录。'
+            Write-Host '安装器会自动补齐平台所需的技能子目录，请不要输入 SKILL.md 路径。'
+            $ProjectPath = Read-Host '请输入完整项目路径'
+        }
+        if ([string]::IsNullOrWhiteSpace($ProjectPath)) { throw '项目路径不能为空。' }
+        $base = [IO.Path]::GetFullPath($ProjectPath.Trim().Trim('"'))
+        if (-not (Test-Path -LiteralPath $base -PathType Container)) { throw "项目文件夹不存在：$base，请先创建或选择已有文件夹。" }
+        if (Test-Path -LiteralPath (Join-Path $base 'SKILL.md')) { throw '请选择文献项目根目录，不要选择 literature-reading 技能文件夹。' }
+        $relative = if ($Platform -eq 'Codex') { '.agents\skills' } else { '.dsh\skills' }
+    } else {
+        $base = [IO.Path]::GetFullPath($env:USERPROFILE)
+        $relative = '.agents\skills'
+    }
+    $skillRoot = Join-Path $base $relative
+    $destination = [IO.Path]::GetFullPath((Join-Path $skillRoot 'literature-reading'))
+    if (-not $destination.StartsWith($base.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw '目标不在所选目录内。' }
+    if ($source -eq $destination -or $destination.StartsWith($source + '\', [StringComparison]::OrdinalIgnoreCase)) { throw '安装目标不能位于源技能内部。' }
+    # Check all ancestors to avoid writing through junctions.
+    $ancestor = $destination
+    while ($ancestor) {
+        if (Test-Path -LiteralPath $ancestor) {
+            if ((Get-Item -LiteralPath $ancestor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "目标路径含链接：$ancestor" }
+        }
+        $ancestor = Split-Path -Parent $ancestor
+    }
+    Assert-PlainTree $destination
+    Write-Host "平台：$Platform；范围：$Scope"
+    Write-Host "目标：$destination"
+    if (Test-Path -LiteralPath $destination) {
+        # Keep backups outside skill discovery directories to avoid duplicate skills.
+        $backupRoot = Join-Path $base '.literature-skill-backups'
+        Assert-PlainTree $backupRoot
+        $backup = Join-Path $backupRoot ('literature-reading-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0,8))
+        [IO.Directory]::CreateDirectory($backupRoot) | Out-Null
+        Copy-Item -LiteralPath $destination -Destination $backup -Recurse
+        Write-Host "旧版完整备份：$backup"
+    }
+    [IO.Directory]::CreateDirectory($destination) | Out-Null
+    $files = @(Get-ChildItem -LiteralPath $source -File -Recurse -Force)
+    foreach ($file in $files) {
+        $relativeFile = $file.FullName.Substring($source.Length + 1)
+        $installedFile = Join-Path $destination $relativeFile
+        [IO.Directory]::CreateDirectory((Split-Path -Parent $installedFile)) | Out-Null
+        Copy-Item -LiteralPath $file.FullName -Destination $installedFile -Force
+        if ((Get-FileHash -LiteralPath $file.FullName).Hash -ne (Get-FileHash -LiteralPath $installedFile).Hash) { throw "校验失败：$relativeFile" }
+    }
+    Write-Host "安装文件校验通过：$($files.Count) 个文件。" -ForegroundColor Green
+    Write-Host '文件安装成功不等于已验证客户端加载。请在所选文献项目中新建会话测试。'
+    if ($Platform -eq 'Codex') {
+        Write-Host '输入：使用 literature-reading 技能，开始文献阅读。'
+        Write-Host '若未识别，重启 Codex 后再新建会话；检查是否有其他位置的同名旧技能。'
+    } else {
+        Write-Host '重启 DSH 后在文献项目中新建会话，输入：文献阅读。'
+    }
+    Write-Host '正确首轮：询问先完善背景与偏好，还是沿用设置；等待回答，不直接分析论文。'
+    Write-Host '已有论文也先询问；明确跳过设置或恢复阅读进度除外。'
+    Write-Host '项目根中原有的 literature-reading 文件夹不会被删除，论文与个人档案不会被修改。'
+    $resultCode = 0
+} catch {
+    Write-Host "安装失败：$($_.Exception.Message)" -ForegroundColor Red
+    Write-Host '若已生成备份，可从提示的备份目录恢复。不要将本次操作当作安装成功。'
+    $resultCode = 1
 }
-
-Write-Host ""
-Read-Host "  按回车退出"
+if (-not $NoPause) { Read-Host '按回车退出' | Out-Null }
+exit $resultCode
